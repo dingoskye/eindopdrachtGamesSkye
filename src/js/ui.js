@@ -8,9 +8,9 @@ export class UI extends Actor{
     player1;
     player2;
 
-    constructor(shark1, shark2) {
+    constructor(player1, shark2) {
         super();
-        this.player1 = shark1;
+        this.player1 = player1;
         this.player2 = shark2;
     }
 
