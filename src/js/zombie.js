@@ -9,7 +9,6 @@ export class Zombie extends Actor {
 
         this.sprite = Resources.Fish.toSprite()
         this.graphics.use(this.sprite)
-        this.sprite.tint = new Color(Math.random() * 255, Math.random() * 255, Math.random() * 255)
 
         this.pos = new Vector(Math.random() * 800 + 400, Math.random() * 600)
         this.vel = new Vector(Math.random() * -150 - 50, 0)
@@ -27,9 +26,3 @@ export class Zombie extends Actor {
         this.pos = new Vector(Math.random() * 400 + rightside, Math.random() * 600)
         this.vel = new Vector(Math.random() * -150 - 50, 0)
     }
-
-    hit() {
-        this.kill();
-    }
-
-}
