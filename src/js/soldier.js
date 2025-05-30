@@ -1,7 +1,5 @@
-import { Actor, Keys, Vector } from "excalibur";
+import { Actor, Keys, Vector, CollisionType, Shape } from "excalibur";
 import { Resources } from './resources.js';
-import { Zombie } from "./zombie.js";
-
 
 export class Soldier extends Actor {
    
@@ -10,15 +8,14 @@ export class Soldier extends Actor {
     score = 0;
 
    constructor() {
-      super({width:Resources.Soldier.width, height:Resources.Soldier.height});
+      super({width:Resources.Soldier.width / 2, height:Resources.Soldier.height / 2});
       
    }
 
    onInitialize(engine) {
       this.graphics.use(Resources.Soldier.toSprite());
-      this.pos = new Vector(1, 500);
+      this.pos = new Vector(250, 500);
       this.scale = new Vector(0.18, 0.18);
-      this.on("collisionstart", (event) => this.handleCollision(event));
    }
 
    onPreUpdate(engine) {
@@ -52,16 +49,7 @@ export class Soldier extends Actor {
 
       this.vel = new Vector(xspeed * 200, yspeed * 200);
 
-      // Zet de rotatie op basis van de richting
+      // Rotatie op basis van de richting
       this.rotation = Math.atan2(this.direction.y, this.direction.x) + Math.PI / 2;
    }
-
-   handleCollision(event) {
-        if (event.other.owner instanceof Zombie) {
-            event.other.owner.hit();
-            this.score++;
-            // @ts-ignore
-            this.scene?.engine.ui.updateScore();
-        }
-    }
 }
