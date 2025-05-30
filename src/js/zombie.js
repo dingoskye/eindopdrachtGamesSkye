@@ -1,11 +1,15 @@
-import { Actor, Color, DisplayMode, Engine, Loader, Vector } from "excalibur"
+import { Actor, Color, DisplayMode, Engine, Loader, Vector, CollisionType } from "excalibur"
 import { Resources } from "./resources"
 import { Bullet } from './bullet.js';
 
 export class Zombie extends Actor {
 
     constructor(soldier) {
-        super({ width: Resources.Zombie.width, height: Resources.Zombie.height})
+        super({
+            width: Resources.Zombie.width,
+            height: Resources.Zombie.height,
+            collisionType: CollisionType.Active
+        });
         this.soldier = soldier;
     }
 
@@ -13,13 +17,20 @@ export class Zombie extends Actor {
       this.graphics.use(Resources.Zombie.toSprite());
       this.setSpawnPosition(); // spawn aan willekeurige rand
       this.scale = new Vector(0.25, 0.25);
+      this.health = 100;
       this.on('collisionstart', (evt) => {
+        if (evt.other && evt.other.owner instanceof Bullet) {
+          evt.other.owner.kill();
+          this.health = (this.health ?? 100) - (evt.other.owner.damage ?? 50);
+          if (this.health <= 0) {
+            this.kill();
+          }
+        }
+        // Soldier raakt zombie
         if (evt.other && evt.other.owner === this.soldier) {
-          // Trigger game over op de engine
           if (engine && typeof engine.gameOver === 'function') {
             engine.gameOver();
-          } else {
-            // fallback: soldier killen
+          } else if (this.soldier && typeof this.soldier.kill === 'function') {
             this.soldier.kill();
           }
         }

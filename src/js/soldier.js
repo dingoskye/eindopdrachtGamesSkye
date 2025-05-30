@@ -1,5 +1,6 @@
 import { Actor, Keys, Vector, CollisionType, Shape } from "excalibur";
 import { Resources } from './resources.js';
+import { Bullet } from './bullet.js';
 
 export class Soldier extends Actor {
    
@@ -8,8 +9,11 @@ export class Soldier extends Actor {
     score = 0;
 
    constructor() {
-      super({width:Resources.Soldier.width / 2, height:Resources.Soldier.height / 2});
-      
+      super({
+         width: Resources.Soldier.width / 2,
+         height: Resources.Soldier.height / 2,
+         collisionType: CollisionType.Active
+      });
    }
 
    onInitialize(engine) {
@@ -43,9 +47,19 @@ export class Soldier extends Actor {
          yspeed = 0;
          this.direction = new Vector(1, 0);
       }
+      
+      // Bullet schieten
       if (kb.wasPressed(Keys.Space)) {
-         console.log("SHOOT!")
-      } 
+         // Richting van de soldier
+         const bulletDir = this.direction.normalize();
+         // Startpositie: iets voor de soldier
+         const bulletPos = this.pos.add(bulletDir.scale(40));
+         // Snelheid bullet
+         const bulletVel = bulletDir.scale(600);
+         // Maak bullet aan
+         const bullet = new Bullet(bulletPos, bulletVel);
+         engine.add(bullet);
+      }
 
       this.vel = new Vector(xspeed * 200, yspeed * 200);
 

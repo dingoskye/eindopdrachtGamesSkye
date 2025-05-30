@@ -7,8 +7,7 @@ export class Bullet extends Actor {
   constructor(pos, velocity) {
     super({
       pos,
-      width: 10,
-      height: 10,
+      radius: 5,
       color: Color.Orange,
     });
 
