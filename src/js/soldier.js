@@ -8,7 +8,6 @@ export class Soldier extends Actor {
     direction = new Vector(1, 0); // standaard naar rechts
     score = 0;
     ammo = 125;
-    #healthBarBg;
     #healthBarFg;
     health = 100;
 
