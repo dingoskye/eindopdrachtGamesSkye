@@ -26,6 +26,7 @@ export class Game extends Engine {
         
         this.add(background);
 
+        
         this.soldier = new Soldier();
         this.add(this.soldier);
 
