@@ -1,69 +1,130 @@
-import { Actor, Vector, Color, Label, Font } from "excalibur";
+import { Actor, Vector, Color, Label, Font, ScreenElement, TextAlign, BaseAlign } from "excalibur";
 
-export class UI extends Actor{
+export class UI extends ScreenElement{
 
-    #labelP1;
-    #labelP2;
+    #labelCurrentScore;
+    #labelAmmo;
+    #labelHighScore;
+    #labelHealth;
 
-    player1;
-    player2;
+    player;
 
-    constructor(player1, shark2) {
+    constructor(player) {
         super();
-        this.player1 = player1;
-        this.player2 = shark2;
+        this.player = player;
     }
 
-    onInitialize(engine){
-        this.#labelP1 = new Label({
-            text: 'score = 0',
-            pos: new Vector(100, 50),
+    updateScore() {
+        this.#labelCurrentScore.text = `Score: ${this.player.score}`;
+        // Check en update highscore
+        let highScore = localStorage.getItem('highscore') || 0;
+        if (this.player.score > highScore) {
+            localStorage.setItem('highscore', this.player.score);
+            this.updateHighScore();
+        }
+    }
+
+    updateAmmo() {
+        if (!this.#labelAmmo) {
+            this.#labelAmmo = new Label({
+                text: `Ammo: ${this.player.ammo}`,
+                pos: new Vector(30, 60), // direct onder score label
+                font: new Font({
+                    size: 20,
+                    family: 'Open Sans',
+                    color: Color.White
+                })
+            });
+            this.#labelAmmo.z = 10000; // altijd bovenop
+            this.#labelAmmo.screenPos = true; // VAST aan scherm
+            this.addChild(this.#labelAmmo);
+        }
+        this.#labelAmmo.text = `Ammo: ${this.player.ammo}`;
+    }
+
+    updateHighScore() {
+        const highScore = localStorage.getItem('highscore') || 0;
+        if (!this.#labelHighScore) return;
+        this.#labelHighScore.text = `Highscore: ${highScore}`;
+    }
+
+    updateHealth() {
+        if (this.#labelHealth) {
+            this.#labelHealth.text = `Health: ${this.player.health}`;
+        }
+    }
+
+    onInitialize(engine) {
+        this.#labelCurrentScore = new Label({
+            text: 'Score: 0',
+            pos: new Vector(30, 30),
             font: new Font({
                 size: 20,
                 family: 'Open Sans',
                 color: Color.Yellow
             })
         });
-        this.#labelP2 = new Label({
-            text: 'score = 0',
-            pos: new Vector(700, 50),
+        this.#labelCurrentScore.z = 10000;
+        this.#labelCurrentScore.screenPos = true;
+        this.addChild(this.#labelCurrentScore);
+        // Highscore label
+        const highScore = localStorage.getItem('highscore') || 0;
+        this.#labelHighScore = new Label({
+            text: `Highscore: ${highScore}`,
+            pos: new Vector(30, 90),
             font: new Font({
                 size: 20,
                 family: 'Open Sans',
-                color: Color.Yellow
+                color: Color.Green
             })
         });
-
-        this.addChild(this.#labelP1);
-        this.addChild(this.#labelP2);
+        this.#labelHighScore.z = 10000;
+        this.#labelHighScore.screenPos = true;
+        this.addChild(this.#labelHighScore);
+        // Health label
+        this.#labelHealth = new Label({
+            text: `Health: ${this.player.health}`,
+            pos: new Vector(30, 120), // onder highscore label
+            font: new Font({
+                size: 20,
+                family: 'Open Sans',
+                color: Color.Red
+            })
+        });
+        this.#labelHealth.z = 10000;
+        this.#labelHealth.screenPos = true;
+        this.addChild(this.#labelHealth);
+        this.updateAmmo();
     }
 
-    updateScore(shark, score) {
-        this.#labelP1.text = `Score ${this.player1.score}`
-        this.#labelP2.text = `Score ${this.player2.score}`
+    onPreUpdate(_engine, _delta) {
+        // Labels zijn nu vast aan het scherm, geen update meer nodig
+        this.updateHealth();
     }
 
     showEndScreen() {
         // Actor voor endscreen achtergrond
         this.endScreen = new Actor({
-            pos: new Vector(1280/2, 720/2),
-            width: 1280,
-            height: 720,
-            z: 9999,
+            pos: new Vector(2000/2, 1200/2),
+            width: 2000,
+            height: 1200,
+            z: 9000, // lager dan labels
             color: new Color(0, 0, 0, 0.85) // Zwarte achtergrond met alpha
-            
         });
         this.addChild(this.endScreen);
 
         // Label voor "Game Over"
         this.endLabel = new Label({
             text: 'Game Over',
-            pos: new Vector(1280/2 - 180, 720/2 - 60),
+            pos: new Vector(1280/2, 720/2), // midden van het scherm
             font: new Font({
                 size: 60,
                 family: 'Open Sans',
-                color: Color.Yellow
-            })
+                color: Color.Yellow,
+                textAlign: TextAlign.Center, // centreren
+                baseAlign: BaseAlign.Middle  // verticaal centreren
+            }),
+            z: 9001 // lager dan score/ammo labels
         });
         this.addChild(this.endLabel);
 
@@ -82,6 +143,11 @@ export class UI extends Actor{
         restartBtn.onclick = () => window.location.reload();
         if (!restartBtn.parentElement) document.body.appendChild(restartBtn);
         restartBtn.style.display = 'none';
+
+        // Zet labels altijd bovenop
+        if (this.#labelCurrentScore) this.#labelCurrentScore.z = 10000;
+        if (this.#labelAmmo) this.#labelAmmo.z = 10000;
+        if (this.#labelHighScore) this.#labelHighScore.z = 10000;
     }
 
     showGameOver() {

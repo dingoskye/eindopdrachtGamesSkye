@@ -1,4 +1,4 @@
-import { Actor, Keys, Vector, CollisionType, Shape } from "excalibur";
+import { Actor, Keys, Vector, CollisionType, Shape, Color } from "excalibur";
 import { Resources } from './resources.js';
 import { Bullet } from './bullet.js';
 
@@ -7,6 +7,10 @@ export class Soldier extends Actor {
     speed = 2;
     direction = new Vector(1, 0); // standaard naar rechts
     score = 0;
+    ammo = 125;
+    #healthBarBg;
+    #healthBarFg;
+    health = 100;
 
    constructor() {
       super({
@@ -49,7 +53,7 @@ export class Soldier extends Actor {
       }
       
       // Bullet schieten
-      if (kb.wasPressed(Keys.Space)) {
+      if (kb.wasPressed(Keys.Space) && this.ammo > 0) {
          // Richting van de soldier
          const bulletDir = this.direction.normalize();
          // Startpositie: iets voor de soldier
@@ -59,11 +63,57 @@ export class Soldier extends Actor {
          // Maak bullet aan
          const bullet = new Bullet(bulletPos, bulletVel);
          engine.add(bullet);
+         this.ammo--;
+         if (engine.ui && typeof engine.ui.updateAmmo === 'function') {
+            engine.ui.updateAmmo();
+         }
       }
 
       this.vel = new Vector(xspeed * 200, yspeed * 200);
 
+      // Clamp soldier binnen bounding box (0,0)-(2000,1200)
+      this.pos.x = Math.max(0, Math.min(2000, this.pos.x));
+      this.pos.y = Math.max(0, Math.min(1200, this.pos.y));
+
       // Rotatie op basis van de richting
       this.rotation = Math.atan2(this.direction.y, this.direction.x) + Math.PI / 2;
+
+      // Update healthbar breedte
+      if (this.#healthBarFg) {
+         this.#healthBarFg.width = Math.max(0, 50 * (this.health / 100));
+      }
+      // Update health label in UI
+      if (engine && engine.currentScene && engine.currentScene.actors) {
+         const ui = engine.currentScene.actors.find(a => a.constructor && a.constructor.name === 'UI');
+         if (ui && typeof ui['updateHealth'] === 'function') {
+            ui['updateHealth']();
+         }
+      }
+   }
+
+   pickUpAmmo(amount) {
+      this.ammo += amount;
+      // @ts-ignore
+      if (this.scene && this.scene.engine && this.scene.engine.ui && typeof this.scene.engine.ui.updateAmmo === 'function') {
+         // @ts-ignore
+         this.scene.engine.ui.updateAmmo();
+      }
+   }
+
+   takeDamage(amount) {
+      this.health = Math.max(0, this.health - amount);
+      // Update health label in UI direct na schade
+      if (this.scene && this.scene.engine && this.scene.engine.currentScene && this.scene.engine.currentScene.actors) {
+         const ui = this.scene.engine.currentScene.actors.find(a => a.constructor && a.constructor.name === 'UI');
+         if (ui && typeof ui['updateHealth'] === 'function') {
+            ui['updateHealth']();
+         }
+         if (this.health === 0 && ui && typeof ui['showGameOver'] === 'function') {
+            this.kill();
+            ui['showGameOver']();
+         }
+      } else if (this.health === 0) {
+         this.kill();
+      }
    }
 }

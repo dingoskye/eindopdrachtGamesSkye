@@ -21,10 +21,10 @@ export class Bullet extends Actor {
   update(engine, delta) {
     super.update(engine, delta);
 
-    const { drawWidth, drawHeight } = engine;
+    // Gebruik de volledige bounding box van het speelveld, niet alleen de viewport
     if (
-      this.pos.x < 0 || this.pos.x > drawWidth ||
-      this.pos.y < 0 || this.pos.y > drawHeight
+      this.pos.x < 0 || this.pos.x > 2000 ||
+      this.pos.y < 0 || this.pos.y > 1200
     ) {
       this.kill();
     }

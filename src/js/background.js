@@ -4,14 +4,11 @@ import { Resources } from './resources.js';
 export class Background extends Actor {
     onInitialize(engine) {
         const sprite = Resources.Background.toSprite();
-
-        // Bereken de schaal zodat het de breedte en hoogte van het canvas vult
-        const scaleX = engine.drawWidth / sprite.width;
-        const scaleY = engine.drawHeight / sprite.height;
-
+        // Schaal naar bounding box ipv engine.drawWidth/Height
+        const scaleX = 2000 / sprite.width;
+        const scaleY = 1200 / sprite.height;
         this.graphics.use(sprite);
-        // center op canvas
-        this.pos = new Vector(engine.halfDrawWidth, engine.halfDrawHeight); 
+        this.pos = new Vector(2000/2, 1200/2); 
         this.scale = new Vector(scaleX, scaleY);
     }
 }

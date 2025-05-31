@@ -11,6 +11,7 @@ export class Zombie extends Actor {
             collisionType: CollisionType.Active
         });
         this.soldier = soldier;
+        this.speed = 80; // standaard snelheid voor alle zombies
     }
 
     onInitialize(engine) {
@@ -23,15 +24,19 @@ export class Zombie extends Actor {
           evt.other.owner.kill();
           this.health = (this.health ?? 100) - (evt.other.owner.damage ?? 50);
           if (this.health <= 0) {
+            if (this.soldier) {
+              this.soldier.score++;
+              if (engine && engine.ui && typeof engine.ui.updateScore === 'function') {
+                engine.ui.updateScore();
+              }
+            }
             this.kill();
           }
         }
         // Soldier raakt zombie
         if (evt.other && evt.other.owner === this.soldier) {
-          if (engine && typeof engine.gameOver === 'function') {
-            engine.gameOver();
-          } else if (this.soldier && typeof this.soldier.kill === 'function') {
-            this.soldier.kill();
+          if (this.soldier && typeof this.soldier.takeDamage === 'function') {
+            this.soldier.takeDamage(10);
           }
         }
       });
@@ -40,25 +45,26 @@ export class Zombie extends Actor {
    onPreUpdate(engine) {
     if (this.soldier) {
       const direction = this.soldier.pos.sub(this.pos).normalize();
-      this.vel = direction.scale(80); // 80 is de snelheid
+      // Gebruik 80 als default speed, FatZombie kan eigen speed property hebben
+      const speed = typeof this.speed === 'number' ? this.speed : 100;
+      this.vel = direction.scale(speed);
       this.rotation = direction.toAngle();
+      // Clamp zombie binnen bounding box (0,0)-(2000,1200)
+      this.pos.x = Math.max(0, Math.min(2000, this.pos.x));
+      this.pos.y = Math.max(0, Math.min(1200, this.pos.y));
     }
 }
 
      setSpawnPosition() {
-    const screenWidth = 1280;
-    const screenHeight = 720;
-    const edge = Math.floor(Math.random() * 4);
+        const screenWidth = 1280;
+        const screenHeight = 720;
+        const edge = Math.floor(Math.random() * 4);
 
-    switch (edge) {
-      case 0: this.pos = new Vector(Math.random() * screenWidth, -50);
-        break;
-      case 1: this.pos = new Vector(screenWidth + 50, Math.random() * screenHeight);
-        break;
-      case 2: this.pos = new Vector(Math.random() * screenWidth, screenHeight + 50);
-        break;
-      case 3: this.pos = new Vector(-50, Math.random() * screenHeight);
-        break;
+        switch (edge) {
+            case 0: this.pos = new Vector(Math.random() * screenWidth, -50); break;
+            case 1: this.pos = new Vector(screenWidth + 50, Math.random() * screenHeight); break;
+            case 2: this.pos = new Vector(Math.random() * screenWidth, screenHeight + 50); break;
+            case 3: this.pos = new Vector(-50, Math.random() * screenHeight); break;
+        }
     }
-  }
 }
