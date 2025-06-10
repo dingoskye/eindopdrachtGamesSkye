@@ -45,7 +45,7 @@ export class Zombie extends Actor {
    onPreUpdate(engine) {
     if (this.soldier) {
       const direction = this.soldier.pos.sub(this.pos).normalize();
-      // Gebruik 80 als default speed, FatZombie kan eigen speed property hebben
+      // Gebruik 100 als default speed, FatZombie heeft een eigen speed property 
       const speed = typeof this.speed === 'number' ? this.speed : 100;
       this.vel = direction.scale(speed);
       this.rotation = direction.toAngle();
